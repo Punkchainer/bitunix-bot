@@ -25,19 +25,16 @@ def place_market_order(symbol, side, risk_pct, tp_list, sl_pct):
     try:
         print("⚙️ Ejecutando orden en Bitunix...", flush=True)
 
-        balance = 1000  # Simulación, sustituir con API de balance si aplica
-        qty = round((balance * (risk_pct / 100)) / 1, 3)  # Simplificado
+        balance = 1000  # Simulado
+        qty = round((balance * (risk_pct / 100)) / 1, 3)
 
         url = BASE_URL + "/api/v1/futures/trade/place_order"
 
         payload = {
             "symbol": symbol,
+            "qty": str(qty),
             "side": "BUY" if side.lower() == "long" else "SELL",
-            "orderType": "MARKET",
-            "leverage": 10,
-            "positionType": "ISOLATED",
-            "tradeType": "OPEN",
-            "qty": str(qty)  # Debe ir como string
+            "orderType": "MARKET"
         }
 
         body = json.dumps(payload, separators=(",", ":"))
