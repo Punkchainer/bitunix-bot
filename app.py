@@ -6,10 +6,20 @@ app = Flask(__name__)
 def webhook():
     try:
         data = request.json
-        print("🔔 Alerta recibida:", data, flush=True)
-        return jsonify({"status": "success", "data": data}), 200
+        required_keys = ["symbol", "side", "risk_pct", "tp_pct", "sl_pct"]
+        if not all(key in data for key in required_keys):
+            return jsonify({"status": "error", "message": "Missing required fields"}), 400
+
+        print("📩 Alerta recibida desde TradingView:", flush=True)
+        print(f"  ▸ Symbol: {data['symbol']}", flush=True)
+        print(f"  ▸ Side: {data['side']}", flush=True)
+        print(f"  ▸ Risk: {data['risk_pct']}%", flush=True)
+        print(f"  ▸ Take Profits: {data['tp_pct']}", flush=True)
+        print(f"  ▸ Stop Loss: {data['sl_pct']}%", flush=True)
+
+        return jsonify({"status": "success", "message": "Alerta procesada correctamente"}), 200
     except Exception as e:
-        print("❌ Error al procesar alerta:", e)
+        print("❌ Error al procesar la alerta:", e, flush=True)
         return jsonify({"status": "error", "message": str(e)}), 400
 
 if __name__ == "__main__":
