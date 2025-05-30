@@ -23,19 +23,18 @@ def generate_signature(nonce, timestamp, api_key, body, secret_key):
 
 def place_market_order(symbol, side, risk_pct, tp_list, sl_pct):
     try:
-        print("⚙️ Ejecutando orden en Bitunix...", flush=True)
+        print("⚙️ Ejecutando orden CopyTrading (MASTER)...", flush=True)
 
         balance = 1000  # Simulado
         qty = round((balance * (risk_pct / 100)) / 1, 3)
 
-        url = BASE_URL + "/api/v1/futures/trade/place_order"
+        url = BASE_URL + "/api/v1/cp/master/order"
 
         payload = {
             "symbol": symbol,
-            "qty": str(qty),
             "side": "BUY" if side.lower() == "long" else "SELL",
-            "orderType": "MARKET",
-            "tradeSide": "OPEN"
+            "type": "MARKET",
+            "quantity": str(qty)
         }
 
         body = json.dumps(payload, separators=(",", ":"))
@@ -55,8 +54,8 @@ def place_market_order(symbol, side, risk_pct, tp_list, sl_pct):
         response.raise_for_status()
         result = response.json()
 
-        print(f"✅ Orden enviada: {result}", flush=True)
+        print(f"✅ Orden CopyTrading enviada: {result}", flush=True)
         print(f"📌 TP (%): {tp_list} | SL (%): {sl_pct}", flush=True)
 
     except Exception as e:
-        print("❌ Error al ejecutar orden:", e, flush=True)
+        print("❌ Error al ejecutar orden CopyTrading:", e, flush=True)
