@@ -28,7 +28,7 @@ def place_market_order(symbol, side, risk_pct, tp_list, sl_pct):
         balance = 1000  # Simulado
         qty = round((balance * (risk_pct / 100)) / 1, 3)
 
-        url = BASE_URL + "/api/v1/cp/master/order"
+        url = BASE_URL + "/api/v1/futures/trade/place_order"
 
         payload = {
             "symbol": symbol,
