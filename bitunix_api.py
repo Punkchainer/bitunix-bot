@@ -23,12 +23,12 @@ def generate_signature(nonce, timestamp, api_key, body, secret_key):
 
 def place_market_order(symbol, side, risk_pct, tp_list, sl_pct):
     try:
-        print("⚙️ Ejecutando orden copytrading (MASTER)...", flush=True)
+        print("⚙️ Ejecutando orden en Bitunix...", flush=True)
 
         balance = 1000  # Simulado
         qty = round((balance * (risk_pct / 100)) / 1, 3)
 
-        url = BASE_URL + "/api/v1/copytrade/master/order"
+        url = BASE_URL + "/api/v1/futures/trade/place_order"
 
         payload = {
             "symbol": symbol,
@@ -57,7 +57,7 @@ def place_market_order(symbol, side, risk_pct, tp_list, sl_pct):
         response.raise_for_status()
         result = response.json()
 
-        print(f"✅ Orden copytrade enviada: {result}", flush=True)
+        print(f"✅ Orden enviada: {result}", flush=True)
         print(f"📌 TP (%): {tp_list} | SL (%): {sl_pct}", flush=True)
 
     except Exception as e:
