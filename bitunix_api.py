@@ -34,7 +34,8 @@ def place_market_order(symbol, side, risk_pct, tp_list, sl_pct):
             "symbol": symbol,
             "qty": str(qty),
             "side": "BUY" if side.lower() == "long" else "SELL",
-            "orderType": "MARKET"
+            "orderType": "MARKET",
+            "tradeSide": "OPEN"
         }
 
         body = json.dumps(payload, separators=(",", ":"))
