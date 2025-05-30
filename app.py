@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from bitunix_api import place_market_order
 
 app = Flask(__name__)
 
@@ -17,7 +18,17 @@ def webhook():
         print(f"  ▸ Take Profits: {data['tp_pct']}", flush=True)
         print(f"  ▸ Stop Loss: {data['sl_pct']}%", flush=True)
 
-        return jsonify({"status": "success", "message": "Alerta procesada correctamente"}), 200
+        # Ejecutar orden en Bitunix
+        place_market_order(
+            symbol=data['symbol'],
+            side=data['side'],
+            risk_pct=data['risk_pct'],
+            tp_list=data['tp_pct'],
+            sl_pct=data['sl_pct']
+        )
+
+        return jsonify({"status": "success", "message": "Orden ejecutada"}), 200
+
     except Exception as e:
         print("❌ Error al procesar la alerta:", e, flush=True)
         return jsonify({"status": "error", "message": str(e)}), 400
