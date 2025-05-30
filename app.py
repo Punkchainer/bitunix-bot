@@ -1,39 +1,63 @@
+import hmac
+import hashlib
+import time
+import json
+import os
 from flask import Flask, request, jsonify
-from bitunix_api import place_market_order
+import requests
 
 app = Flask(__name__)
 
+API_KEY = os.environ.get("API_KEY", "abc123")
+API_SECRET = os.environ.get("API_SECRET", "xyz456")
+BASE_URL = "https://fapi.bitunix.com"
+
+def get_nonce():
+    return os.urandom(16).hex()
+
+def get_timestamp():
+    return str(int(time.time() * 1000))
+
+def generate_signature(nonce, timestamp, api_key, body, secret_key):
+    message = nonce + timestamp + api_key + "" + body
+    first_hash = hashlib.sha256(message.encode()).hexdigest()
+    return hashlib.sha256((first_hash + secret_key).encode()).hexdigest()
+
 @app.route("/", methods=["POST"])
-def webhook():
+def place_order():
     try:
         data = request.json
-        required_keys = ["symbol", "side", "risk_pct", "tp_pct", "sl_pct"]
-        if not all(key in data for key in required_keys):
-            return jsonify({"status": "error", "message": "Missing required fields"}), 400
+        symbol = data["symbol"]
+        side = "BUY" if data["side"].lower() == "long" else "SELL"
+        qty = str(data.get("qty", "0.3"))
 
-        print("📩 Alerta recibida desde TradingView:", flush=True)
-        print(f"  ▸ Symbol: {data['symbol']}", flush=True)
-        print(f"  ▸ Side: {data['side']}", flush=True)
-        print(f"  ▸ Risk: {data['risk_pct']}%", flush=True)
-        print(f"  ▸ Take Profits: {data['tp_pct']}", flush=True)
-        print(f"  ▸ Stop Loss: {data['sl_pct']}%", flush=True)
+        payload = {
+            "symbol": symbol,
+            "side": side,
+            "orderType": "MARKET",
+            "qty": qty,
+            "tradeSide": "OPEN"
+        }
 
-        # Ejecutar orden en Bitunix
-        place_market_order(
-            symbol=data['symbol'],
-            side=data['side'],
-            risk_pct=data['risk_pct'],
-            tp_list=data['tp_pct'],
-            sl_pct=data['sl_pct']
-        )
+        body = json.dumps(payload, separators=(",", ":"))
+        nonce = get_nonce()
+        timestamp = get_timestamp()
+        sign = generate_signature(nonce, timestamp, API_KEY, body, API_SECRET)
 
-        return jsonify({"status": "success", "message": "Orden ejecutada"}), 200
+        headers = {
+            "api-key": API_KEY,
+            "nonce": nonce,
+            "timestamp": timestamp,
+            "sign": sign,
+            "Content-Type": "application/json"
+        }
+
+        url = BASE_URL + "/api/v1/futures/trade/place_order"
+        res = requests.post(url, headers=headers, data=body)
+        return jsonify(res.json()), res.status_code
 
     except Exception as e:
-        print("❌ Error al procesar la alerta:", e, flush=True)
-        return jsonify({"status": "error", "message": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True, host="0.0.0.0", port=10000)
