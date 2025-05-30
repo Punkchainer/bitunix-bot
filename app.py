@@ -6,7 +6,7 @@ app = Flask(__name__)
 def webhook():
     try:
         data = request.json
-        print("🔔 Alerta recibida:", data)
+        print("🔔 Alerta recibida:", data, flush=True)
         return jsonify({"status": "success", "data": data}), 200
     except Exception as e:
         print("❌ Error al procesar alerta:", e)
